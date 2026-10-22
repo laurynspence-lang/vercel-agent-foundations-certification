@@ -17,7 +17,12 @@ import { createOrGetSandbox, SANDBOX_NAME } from "@/lib/sandbox";
 
 export async function readMemories() {
   const sandbox = await createOrGetSandbox(SANDBOX_NAME);
-  const buffer = await sandbox.readFileToBuffer({ path: "memories.md" });
+  // Absolute path: readFileToBuffer doesn't resolve "memories.md" against the
+  // sandbox's working directory (it returns null), and the memory protocol
+  // below tells the agent to write to /vercel/sandbox/memories.md.
+  const buffer = await sandbox.readFileToBuffer({
+    path: "/vercel/sandbox/memories.md",
+  });
   return buffer ? new TextDecoder().decode(buffer) : null;
 }
 

@@ -17,13 +17,17 @@ export async function loginAction(formData: FormData): Promise<void> {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     maxAge: COOKIE_MAX_AGE,
-    path: "/admin",
+    // Site-wide so the browser also sends it to /api/admin/* (the admin chat),
+    // which proxy.ts now protects.
+    path: "/",
   });
   redirect("/admin");
 }
 
 export async function logoutAction(): Promise<void> {
   const store = await cookies();
-  store.delete(ADMIN_COOKIE_NAME);
+  // Clear both the current site-wide cookie and any older /admin-only one.
+  store.delete({ name: ADMIN_COOKIE_NAME, path: "/" });
+  store.delete({ name: ADMIN_COOKIE_NAME, path: "/admin" });
   redirect("/admin/login");
 }
